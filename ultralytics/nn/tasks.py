@@ -145,7 +145,8 @@ class BaseModel(nn.Module):
             (torch.Tensor): The last output of the model.
         """
         y, dt, embeddings = [], [], []  # outputs
-        for m in self.model:
+        x = x.cuda()
+        for m in self.model.cuda():
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -203,7 +204,7 @@ class BaseModel(nn.Module):
         """
         if not self.is_fused():
             for m in self.model.modules():
-                if isinstance(m, (Conv, Conv2, DWConv, DConv)) and hasattr(m, "bn"):
+                if isinstance(m, (Conv, Conv2, DWConv)) and hasattr(m, "bn"):
                     if isinstance(m, Conv2):
                         m.fuse_convs()
                     m.conv = fuse_conv_and_bn(m.conv, m.bn)  # update conv
@@ -1028,7 +1029,6 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 C2fPSA,
                 C2fCIB,
                 C2PSA,
-                DConv,
                 DC2f,
                 DC2fCIB,
             }:

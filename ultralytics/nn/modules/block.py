@@ -1116,11 +1116,11 @@ class DBottleneck(nn.Module):
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         if k[0]==3:
-            self.cv1 = DConv(c1, c_, k[0], g=g)
+            self.cv1 = DConv(c1, c_, k[0], 1, g=g)
         else:
             self.cv1 = Conv(c1, c_, k[0], 1, g=g)
         if k[1]==3:
-            self.cv2 = DConv(c2, k[1], 1, g=g)
+            self.cv2 = DConv(c_, c2, k[1], 1, g=g)
         else:
             self.cv2 = Conv(c_, c2, k[1], 1, g=g)
         self.add = shortcut and c1 == c2
