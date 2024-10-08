@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import torch
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='DYOLO')
 parser.add_argument('--model', dest='model', type=str, default='yolov10n')
