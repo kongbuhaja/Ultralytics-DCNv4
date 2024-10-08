@@ -158,7 +158,7 @@ class Detect(nn.Module):
         scores = scores.gather(dim=1, index=index.repeat(1, 1, nc))
         scores, index = scores.flatten(1).topk(min(max_det, anchors))
         i = torch.arange(batch_size)[..., None]  # batch indices
-        return torch.cat([boxes[i, index // nc], scores[..., None], (index % nc)[..., None].float()], dim=-1)
+        return torch.cat([boxes[i, torch.div(index, nc, rounding_mode='trunc')], scores[..., None], (index % nc)[..., None].float()], dim=-1)
 
 
 class Segment(Detect):
