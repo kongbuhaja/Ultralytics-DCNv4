@@ -1115,11 +1115,11 @@ class DBottleneck(nn.Module):
         """Initializes a standard bottleneck module with optional shortcut connection and configurable parameters."""
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
-        if c1==c_ and k[0]==3:
-            self.cv1 = DConv(c1, k[0], 1, g=g)
+        if k[0]==3:
+            self.cv1 = DConv(c1, c_, k[0], g=g)
         else:
             self.cv1 = Conv(c1, c_, k[0], 1, g=g)
-        if c_==c2 and k[1]==3:
+        if k[1]==3:
             self.cv2 = DConv(c2, k[1], 1, g=g)
         else:
             self.cv2 = Conv(c_, c2, k[1], 1, g=g)
@@ -1169,11 +1169,11 @@ class DCIB(nn.Module):
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = nn.Sequential(
-            DConv(c1, k=3, g=c1),
+            DConv(c1, c1, k=3, g=c1),
             Conv(c1, 2 * c_, 1),
             RepVGGDW(2 * c_) if lk else DConv(2 * c_, 3, g=2 * c_),
             Conv(2 * c_, c2, 1),
-            DConv(c2, k=3, g=c2)
+            DConv(c2, c2, k=3, g=c2)
         )
 
         self.add = shortcut and c1 == c2

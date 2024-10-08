@@ -73,6 +73,7 @@ from .conv import (
     LightConv,
     RepConv,
     SpatialAttention,
+    DConv,
 )
 from .head import OBB, Classify, Detect, Pose, RTDETRDecoder, Segment, WorldDetect, v10Detect
 from .transformer import (
@@ -160,5 +161,5 @@ __all__ = (
     "PSA",
     "DConv",
     "DC2f",
-    "DC2FIB"
+    "DC2fCIB"
 )

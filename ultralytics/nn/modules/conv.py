@@ -7,6 +7,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from DCNv4 import DCNv4
+
 __all__ = (
     "Conv",
     "Conv2",
@@ -337,16 +339,18 @@ class DConv(nn.Module):
 
     default_act = nn.SiLU()  # default activation
 
-    def __init__(self, c, k=3, s=1, p=None, g=1, d=1, act=True):
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
-        self.conv = DCNv4(c, k, s, autopad(k, p, d), groups=g, dilation=d, output_bias=False)
-        self.bn = nn.BatchNorm2d(c)
+        self.pw = Conv(c1, c2, 1, 1, g=g) if c1 != c2 else None
+        self.conv = DCNv4(c2, k, s, autopad(k, p, d), groups=g, dilation=d, output_bias=False)
+        self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        return self.act(self.bn(self.conv(x)))
+        
+        return self.act(self.bn(self.conv(self.pw(x)))) if self.pw else self.act(self.bn(self.conv(x)))
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
