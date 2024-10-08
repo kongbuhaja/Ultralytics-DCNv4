@@ -169,3 +169,5 @@ pnnx*
 
 # calibration image
 calibration_*.npy
+
+!DCNv4_op/setup.py
