@@ -58,6 +58,9 @@ from .block import (
     SCDown,
     DC2f,
     DC2fCIB,
+    DC3,
+    DC3k,
+    DC3k2,
 )
 from .conv import (
     CBAM,
