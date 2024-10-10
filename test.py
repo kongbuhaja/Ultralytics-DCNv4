@@ -1,5 +1,3 @@
-from ultralytics import YOLO
-import torch
 import argparse
 import os
 
@@ -10,6 +8,9 @@ parser.add_argument('--gpus', dest='gpus', type=str, default='0', help='which de
 args = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+
+from ultralytics import YOLO
+import torch
 
 if torch.cuda.is_available():
     device = f"cuda:{args.gpus}"
