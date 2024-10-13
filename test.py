@@ -3,8 +3,11 @@ import os
 
 parser = argparse.ArgumentParser(description='DYOLO')
 parser.add_argument('--model', dest='model', type=str, default='yolov10n')
+parser.add_argument('--load_file', dest='load_file', type=str, default='')
 parser.add_argument('--data', dest='data', type=str, default='coco')
 parser.add_argument('--gpus', dest='gpus', type=str, default='0', help='which device do you want to use')
+parser.add_argument('--epochs', dest='epochs', type=int, default=500)
+
 args = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
@@ -19,12 +22,13 @@ else:
     device = "cpu"
     print("CUDA is not available. Using CPU.")
 
-model = YOLO(f"{args.model}.yaml").cuda()
+model_file = args.load_file if args.load_file else f"{args.model}.yaml"
+model = YOLO(f"{model_file}").cuda()
 
 train_args = dict(
     data = f'{args.data}.yaml',
     batch=128,
-    epochs=500,
+    epochs=args.epochs,
     imgsz=640,
     device=0,
     val=True,
