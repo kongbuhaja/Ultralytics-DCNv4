@@ -211,7 +211,13 @@ class BaseTrainer:
         if self.args.cos_lr:
             self.lf = one_cycle(1, self.args.lrf, self.epochs)  # cosine 1->hyp['lrf']
         else:
-            self.lf = lambda x: max(1 - x / self.epochs, 0) * (1.0 - self.args.lrf) + self.args.lrf  # linear
+            def lf2(x, w=500):
+                if x<=w:
+                    return max(1 - x / w, 0) * (1.0 - self.args.lrf) + self.args.lrf
+                else:
+                    return self.args.lrf * (1 - 0.9 * ((x-w)/(self.epochs-w)))
+            self.lf = lf2
+            # self.lf = lambda x: max(1 - x / self.epochs, 0) * (1.0 - self.args.lrf) + self.args.lrf  # linear
         self.scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=self.lf)
 
     def _setup_ddp(self, world_size):
