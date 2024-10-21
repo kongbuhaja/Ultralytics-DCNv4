@@ -343,7 +343,7 @@ class DConv(nn.Module):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
         self.pw = Conv(c1, c2, 1, 1, g=g) if c1 != c2 else None
-        self.conv = DCNv4(c2, k, s, autopad(k, p, d), groups=g, dilation=d, output_bias=False)
+        self.conv = DCNv4(c2, k, s, autopad(k, p, d), groups=g, dilation=d, dw_kernel_size=k, output_bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 

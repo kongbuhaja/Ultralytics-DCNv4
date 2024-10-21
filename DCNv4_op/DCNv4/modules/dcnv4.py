@@ -113,7 +113,7 @@ class DCNv4(nn.Module):
             x = self.value_proj(x)
 
         if self.dw_kernel_size is not None:
-            offset_mask_input = self.offset_mask_dw(input.permute(0, 3, 1, 2)).permute(0, 2, 3, 1)
+            offset_mask_input = self.offset_mask_dw(input)
         else:
             offset_mask_input = input
         offset_mask = self.offset_mask(offset_mask_input.permute(0, 2, 3, 1))
