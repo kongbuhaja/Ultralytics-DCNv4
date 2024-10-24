@@ -49,7 +49,7 @@ __all__ = (
     "Attention",
     "PSA",
     "SCDown",
-    "DC2f"
+    "DC2f",
 )
 
 
@@ -1116,11 +1116,11 @@ class DBottleneck(nn.Module):
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         if k[0]==3:
-            self.cv1 = DConv(c1, c_, k[0], 1, g=g)
+            self.cv1 = DConv(c1, k[0], 1, g=min(c1//16, 16))
         else:
             self.cv1 = Conv(c1, c_, k[0], 1, g=g)
         if k[1]==3:
-            self.cv2 = DConv(c_, c2, k[1], 1, g=g)
+            self.cv2 = DConv(c_, k[1], 1, g=min(c1//16, 16))
         else:
             self.cv2 = Conv(c_, c2, k[1], 1, g=g)
         self.add = shortcut and c1 == c2
@@ -1128,6 +1128,15 @@ class DBottleneck(nn.Module):
     def forward(self, x):
         """Applies the YOLO FPN to input data."""
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
+    
+class RepDBottleneck(DBottleneck):
+    """Rep bottleneck."""
+
+    def __init__(self, c1, c2, shortcut=True, g=1, k=(3, 3), e=0.5):
+        """Initializes a RepBottleneck module with customizable in/out channels, shortcuts, groups and expansion."""
+        super().__init__(c1, c2, shortcut, g, k, e)
+        c_ = int(c2 * e)  # hidden channels
+        self.cv1 = RepConv(c1, c_, k[0], 1)
 
 class DC2f(nn.Module):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
@@ -1169,11 +1178,11 @@ class DCIB(nn.Module):
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = nn.Sequential(
-            DConv(c1, c1, k=3, g=c1),
+            DConv(c1, k=3, g=min(c1//16, 16)),
             Conv(c1, 2 * c_, 1),
-            RepVGGDW(2 * c_) if lk else DConv(2 * c_, 3, g=2 * c_),
+            RepVGGDW(2 * c_) if lk else DConv(2 * c_, 3, g=min((2 * c_)//16, 16)),
             Conv(2 * c_, c2, 1),
-            DConv(c2, c2, k=3, g=c2)
+            DConv(c2, k=3, g=min(c2//16, 16))
         )
 
         self.add = shortcut and c1 == c2

@@ -339,19 +339,18 @@ class DConv(nn.Module):
 
     default_act = nn.SiLU()  # default activation
 
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True):
+    def __init__(self, c1, k=3, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
-        self.pw = Conv(c1, c2, 1, 1, g=g) if c1 != c2 else None
-        self.conv = DCNv4(c2, k, s, autopad(k, p, d), groups=g, dilation=d, dw_kernel_size=k, output_bias=True)
+        c2 = c1*2
+        # self.pw1 = Conv(c1, c2, 1, 1, g=g)
+        self.cv1 = nn.Conv2d(c1, c2, 1, 1, groups=g)
+        self.conv = DCNv4(c2, k, s, autopad(k, p, d), group=g, dilation=d, dw_kernel_size=k, output_bias=True)
+        # self.pw2 = Conv(c2, c1, 1, 1, g=g)
+        self.cv2 = nn.Conv2d(c2, c1, 1, 1, groups=g)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        
-        return self.act(self.bn(self.conv(self.pw(x)))) if self.pw else self.act(self.bn(self.conv(x)))
-
-    def forward_fuse(self, x):
-        """Perform transposed convolution of 2D data."""
-        return self.act(self.conv(x))
+        return self.cv2(self.act(self.bn(self.conv(self.cv1(x)))))
