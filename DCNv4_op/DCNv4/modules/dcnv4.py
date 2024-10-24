@@ -79,6 +79,7 @@ class DCNv4(nn.Module):
         self.K =  group * (kernel_size * kernel_size - self.remove_center)
         if dw_kernel_size is not None:
             self.offset_mask_dw = nn.Conv2d(channels, channels, dw_kernel_size, stride=1, padding=(dw_kernel_size - 1) // 2, groups=channels)
+            
         self.offset_mask = nn.Linear(channels, int(math.ceil((self.K * 3)/8)*8))
         if not without_pointwise:
             self.value_proj = nn.Linear(channels, channels)
