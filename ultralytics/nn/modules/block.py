@@ -1116,11 +1116,11 @@ class DBottleneck(nn.Module):
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         if k[0]==3:
-            self.cv1 = DConv(c1, k[0], 1, g=min(c1//16, 16))
+            self.cv1 = DConv(c1, c_, k[0], 1, g=min(c1//16, 16))
         else:
             self.cv1 = Conv(c1, c_, k[0], 1, g=g)
         if k[1]==3:
-            self.cv2 = DConv(c_, k[1], 1, g=min(c1//16, 16))
+            self.cv2 = DConv(c_, c2, k[1], 1, g=min(c1//16, 16))
         else:
             self.cv2 = Conv(c_, c2, k[1], 1, g=g)
         self.add = shortcut and c1 == c2
@@ -1178,11 +1178,11 @@ class DCIB(nn.Module):
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = nn.Sequential(
-            DConv(c1, k=3, g=min(c1//16, 16)),
+            DConv(c1, c1, k=3, g=min(c1//16, 16)),
             Conv(c1, 2 * c_, 1),
-            RepVGGDW(2 * c_) if lk else DConv(2 * c_, 3, g=min((2 * c_)//16, 16)),
+            RepVGGDW(2 * c_) if lk else DConv(2 * c_, 2 * c_, 3, g=min((2 * c_)//16, 16)),
             Conv(2 * c_, c2, 1),
-            DConv(c2, k=3, g=min(c2//16, 16))
+            DConv(c2, c2, k=3, g=min(c2//16, 16))
         )
 
         self.add = shortcut and c1 == c2
