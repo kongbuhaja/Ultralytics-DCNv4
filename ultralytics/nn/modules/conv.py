@@ -354,6 +354,4 @@ class DConv(nn.Module):
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         return self.cv2(self.act(self.bn(self.conv(self.cv1(x)))))
-# 2,550,032 c2 g
-# 2,574,608 c2 1
-# 2,791,600 c2*2 1
+    
