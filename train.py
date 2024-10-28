@@ -1,33 +1,36 @@
 import argparse
 import os, psutil
-from ultralytics import YOLO
-import torch
 
 parser = argparse.ArgumentParser(description='DYOLO')
 parser.add_argument('--model', dest='model', type=str, default='yolov10n')
 parser.add_argument('--load_file', dest='load_file', type=str, default='')
 parser.add_argument('--data', dest='data', type=str, default='coco')
-parser.add_argument('--cpus', dest='cpus', type=str, default='0-15', help='How many cpus do you want to use')
 parser.add_argument('--gpus', dest='gpus', type=str, default='0', help='which device do you want to use')
+parser.add_argument('--cpus', dest='cpus', type=str, default='16-63', help='how many cores do you want to use')
 parser.add_argument('--epochs', dest='epochs', type=int, default=1500)
 
 args = parser.parse_args()
 
-cpu_range = [int(core) for core in args.cpus.split('-')]
+cores = [int(core) for core in args.cpus.split('-')]
 p = psutil.Process()
-p.cpu_affinity(cpu_range)
+p.cpu_affinity(list(range(cores[0], cores[1]+1)))
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
 
+from ultralytics import YOLO
+import torch
+
 if torch.cuda.is_available():
-    device = f"cuda:{args.gpus}"
-    print(f"Using GPU: {torch.cuda.get_device_name(0)}")
+    device = torch.device("cuda")
+    print(f"Using GPU(s): {args.gpus}")
+    for i in range(torch.cuda.device_count()):
+        print(f"  GPU {i}: {torch.cuda.get_device_name(i)}")
 else:
-    device = "cpu"
+    device = torch.device("cpu")
     print("CUDA is not available. Using CPU.")
 
 model_file = args.load_file if args.load_file else f"{args.model}.yaml"
-model = YOLO(f"{model_file}")
+model = YOLO(f"{model_file}").to(device)
 
 train_args = dict(
     data = f'{args.data}.yaml',

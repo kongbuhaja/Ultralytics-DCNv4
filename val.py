@@ -1,4 +1,3 @@
-from ultralytics import YOLO
 import time, os, argparse, psutil
 
 parser = argparse.ArgumentParser(description='DYOLO')
@@ -9,12 +8,25 @@ parser.add_argument('--gpus', dest='gpus', type=str, default='0', help='which de
 
 args = parser.parse_args()
 
-cpu_range = [int(core) for core in args.cpus.split('-')]
+cores = [int(core) for core in args.cpus.split('-')]
 p = psutil.Process()
-p.cpu_affinity(cpu_range)
+p.cpu_affinity(list(range(cores[0], cores[1]+1)))
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
 
-model = YOLO(f"{args.model}")
+from ultralytics import YOLO
+import torch 
+
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+    print(f"Using GPU(s): {args.gpus}")
+    for i in range(torch.cuda.device_count()):
+        print(f"  GPU {i}: {torch.cuda.get_device_name(i)}")
+else:
+    device = torch.device("cpu")
+    print("CUDA is not available. Using CPU.")
+
+model_file = args.model if '.pt' in args.model else f'{args.model}.yaml'
+model = YOLO(f"{model_file}")
 
 results = model.val(data = f'{args.data}.yaml')
