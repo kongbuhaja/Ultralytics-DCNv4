@@ -1116,8 +1116,8 @@ class DBottleneck(nn.Module):
         """Initializes a standard bottleneck module with optional shortcut connection and configurable parameters."""
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
-        self.cv1 = DConv(c1, c_, k[0], 1)#, g=min(math.gcd(c1,c_)//16, 16))
-        self.cv2 = DConv(c_, c2, k[1], 1)#, g=min(math.gcd(c_,c2)//16, 16))
+        self.cv1 = DConv(c1, c_, k[0])#, g=min(math.gcd(c1,c_)//16, 16))
+        self.cv2 = DConv(c_, c2, k[1])#, g=min(math.gcd(c_,c2)//16, 16))
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
