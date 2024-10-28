@@ -23,7 +23,7 @@ else:
     print("CUDA is not available. Using CPU.")
 
 model_file = args.load_file if args.load_file else f"{args.model}.yaml"
-model = YOLO(f"{model_file}").cuda()
+model = YOLO(f"{model_file}")
 
 train_args = dict(
     data = f'{args.data}.yaml',
@@ -35,5 +35,3 @@ train_args = dict(
     save_period=1,
 )
 train_results = model.train(**train_args)
-
-metrics = model.val()
