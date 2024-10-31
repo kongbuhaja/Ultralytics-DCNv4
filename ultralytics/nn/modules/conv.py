@@ -343,11 +343,11 @@ class DConv(nn.Module):
         """Initialize Conv layer with given arguments including activation."""
         super().__init__()
         c = math.gcd(c1, c2)
-        g = max(1, c//16)
-        self.cv1 = nn.Conv2d(c1, c*2, 1, 1, groups=1)
-        self.conv = DCNv4(c*2, k, s, autopad(k, p, d), group=g, dilation=d, dw_kernel_size=k, output_bias=True)
+        dg = max(8, c//16)
+        self.cv1 = nn.Conv2d(c1, c*2, 1, 1, groups=g)
+        self.conv = DCNv4(c*2, k, s, autopad(k, p, d), group=dg, dilation=d, dw_kernel_size=k, output_bias=True)
         self.bn = nn.BatchNorm2d(c*2)
-        self.cv2 = nn.Conv2d(c*2, c2, 1, 1, groups=1)
+        self.cv2 = nn.Conv2d(c*2, c2, 1, 1, groups=g)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
