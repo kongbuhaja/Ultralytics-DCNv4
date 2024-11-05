@@ -353,22 +353,3 @@ class DConv(nn.Module):
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         return self.cv2(self.act(self.bn(self.conv(self.cv1(x)))))
-    
-class DConv_(nn.Module):
-    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
-
-    default_act = nn.SiLU()  # default activation
-
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True):
-        """Initialize Conv layer with given arguments including activation."""
-        super().__init__()
-        c = math.gcd(c1, c2) * 2
-        self.cv1 = nn.Conv2d(c1, c, 1, 1, groups=g)
-        self.conv = DCNv4(c, k, s, autopad(k, p, d), group=g, dilation=d, dw_kernel_size=k, output_bias=True)
-        self.bn = nn.BatchNorm2d(c)
-        self.cv2 = nn.Conv2d(c, c2, 1, 1, groups=g)
-        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-
-    def forward(self, x):
-        """Apply convolution, batch normalization and activation to input tensor."""
-        return self.cv2(self.act(self.bn(self.conv(self.cv1(x)))))
