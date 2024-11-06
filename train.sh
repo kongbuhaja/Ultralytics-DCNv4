@@ -24,6 +24,7 @@ task() {
 
 log_dir="./logs"
 log_directory_check "$log_dir"
+
 task deco-yolov8n "$log_dir"
 task deco-yolov10n "$log_dir"
 task deco-yolov11n "$log_dir"
