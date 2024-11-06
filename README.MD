@@ -31,6 +31,11 @@ python train.py --model deco-yolo{8/10/11}n --data coco --gpus 0 --cpus 0-23 --e
 python val.py --model "*.pt path" --data coco --gpus 0 cpus 0-23
 ```
 or
+```bash
+sh train.sh
+sh val.sh
+```
+or
 ```python
 from ultralytics import YOLO
 import torch
