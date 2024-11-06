@@ -36,9 +36,5 @@ print(f"metrics/mAP50-95(B): {results.results_dict['metrics/mAP50-95(B)']}")
 print(f"avg pre-processing time: {results.speed['preprocess']:.4f} ms")
 print(f"avg inference time: {results.speed['inference']:.4f} ms")
 print(f"avg post-processing time: {results.speed['postprocess']:.4f} ms")
-print(f'avg total time:{sum([results.speed['preprocess'], 
-                             results.speed['inference'],
-                             results.speed['postprocess']]):.4f}')
-print(f"FPS: {1000/sum([results.speed['preprocess'], 
-                        results.speed['inference'],
-                        results.speed['postprocess']]), :.2f}")
+print(f"avg total time: {sum([results.speed['preprocess'], results.speed['inference'], results.speed['postprocess']]):.4f}")
+print(f"FPS: {1000/sum([results.speed['preprocess'], results.speed['inference'], results.speed['postprocess']]):.2f}")
