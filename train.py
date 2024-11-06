@@ -1,13 +1,13 @@
 import argparse
 import os, psutil
 
-parser = argparse.ArgumentParser(description='DYOLO')
+parser = argparse.ArgumentParser(description='DeCo-YOLOs')
 parser.add_argument('--model', dest='model', type=str, default='yolov10n')
 parser.add_argument('--load_file', dest='load_file', type=str, default='')
 parser.add_argument('--data', dest='data', type=str, default='coco')
 parser.add_argument('--gpus', dest='gpus', type=str, default='0', help='which device do you want to use')
 parser.add_argument('--cpus', dest='cpus', type=str, default='0-23', help='how many cores do you want to use')
-parser.add_argument('--epochs', dest='epochs', type=int, default=1500)
+parser.add_argument('--epochs', dest='epochs', type=int, default=1000)
 
 args = parser.parse_args()
 
@@ -37,7 +37,7 @@ train_args = dict(
     batch=64,
     epochs=args.epochs,
     imgsz=640,
-    device=0,
+    device=device,
     val=True,
     save_period=1,
 )
