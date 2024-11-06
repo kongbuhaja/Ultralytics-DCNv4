@@ -1,6 +1,6 @@
 # DeCo_YOLO: YOLOs with Deformable Convolution
 
-![alt text](image.png)
+![graph](/images/graph.png)
 
 <details>
 <summary>Abstract</summary>
