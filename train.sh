@@ -8,7 +8,7 @@ log_directory_check(){
 }
 
 start_background_task() {
-    nohup python3 train.py --model "$1" > "$2/$1" 2>&1 &
+    nohup python3 train.py --model "$1" > "$2/$1.log" 2>&1 &
 }
 
 wait_for_completion() {
@@ -18,13 +18,13 @@ wait_for_completion() {
 }
 
 task() {
-    start_background_task "$1" "$2" "$3"
+    start_background_task "$1" "$2"
     wait_for_completion "$1"
 }
 
 log_dir="./logs"
 log_directory_check "$log_dir"
 
-task deco-yolov8n "$log_dir"
-task deco-yolov10n "$log_dir"
-task deco-yolov11n "$log_dir"
+task deco-yolo8n "$log_dir"
+task deco-yolo10n "$log_dir"
+task deco-yolo11n "$log_dir"
