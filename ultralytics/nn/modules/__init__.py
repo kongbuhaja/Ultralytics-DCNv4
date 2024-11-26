@@ -60,6 +60,8 @@ from .block import (
     DC2fCIB,
     DC3k,
     DC3k2,
+    PSD,
+    C2PSD
 )
 from .conv import (
     CBAM,
@@ -163,5 +165,7 @@ __all__ = (
     "PSA",
     "DConv",
     "DC2f",
-    "DC2fCIB"
+    "DC2fCIB",
+    "PSD",
+    "C2PSD"
 )

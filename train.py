@@ -3,7 +3,6 @@ import os, psutil
 
 parser = argparse.ArgumentParser(description='DeCo-YOLOs')
 parser.add_argument('--model', dest='model', type=str, default='yolov10n')
-parser.add_argument('--load_file', dest='load_file', type=str, default='')
 parser.add_argument('--data', dest='data', type=str, default='coco')
 parser.add_argument('--gpus', dest='gpus', type=str, default='0', help='which device do you want to use')
 parser.add_argument('--cpus', dest='cpus', type=str, default='0-23', help='how many cores do you want to use')
@@ -29,7 +28,7 @@ else:
     device = torch.device("cpu")
     print("CUDA is not available. Using CPU.")
 
-model_file = args.load_file if args.load_file else f"{args.model}.yaml"
+model_file = args.model if '.pt' in args.model else f'{args.model}.yaml'
 model = YOLO(f"{model_file}").to(device)
 
 train_args = dict(
@@ -40,5 +39,6 @@ train_args = dict(
     device=device,
     val=True,
     save_period=1,
+    name=args.model
 )
 train_results = model.train(**train_args)

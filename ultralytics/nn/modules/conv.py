@@ -335,21 +335,16 @@ class Concat(nn.Module):
         return torch.cat(x, self.d)
 
 class DConv(nn.Module):
-    """Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)."""
-
-    default_act = nn.SiLU()  # default activation
-
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True):
-        """Initialize Conv layer with given arguments including activation."""
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True, e=1.0):
         super().__init__()
-        c = math.gcd(c1, c2)
-        dg = max(8, c//16)
-        self.cv1 = nn.Conv2d(c1, c*2, 1, 1, groups=g)
-        self.conv = DCNv4(c*2, k, s, autopad(k, p, d), group=dg, dilation=d, dw_kernel_size=k, output_bias=True)
-        self.bn = nn.BatchNorm2d(c*2)
-        self.cv2 = nn.Conv2d(c*2, c2, 1, 1, groups=g)
-        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        assert k==3
+        c = int(c1 * e)//16*16
+        self.cv1 = nn.Conv2d(c1, c, 1, 1, groups=1)
+        self.conv = DCNv4(c, k, s, autopad(k, p, d), dw_kernel_size=1, without_pointwise=False, output_bias=False)
+        self.cv2 = nn.Conv2d(c, c2, 1, 1, groups=1, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = nn.SiLU() if act is True else act if isinstance(act, nn.Module) else None
 
     def forward(self, x):
-        """Apply convolution, batch normalization and activation to input tensor."""
-        return self.cv2(self.act(self.bn(self.conv(self.cv1(x)))))
+        x = self.bn(self.cv2(self.conv(self.cv1(x))))
+        return self.act(x) if self.act else x
