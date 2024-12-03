@@ -34,15 +34,15 @@ log_directory_check "$log_dir"
 # 2,724,448     2,775,520     2,624,080
 
 
-task deco-yolo8n "$log_dir" #2,700,464  2,753,600
-task deco-yolo10n "$log_dir" #2,751,536  2,804,672
-task deco-yolo11n "$log_dir" #2,588,432  2,639,408
+# task deco-yolo8n "$log_dir" #2,807,136
+# task deco-yolo10n "$log_dir" #2,858,208
+task deco-yolo11n "$log_dir" #2,719,760
 
-task psd-yolo10n "$log_dir" #2,775,384  2,775,384
-task c2psd-yolo11n "$log_dir" #2,623,944
+# task psd-yolo10n "$log_dir" #2,775,464
+# task c2psd-yolo11n "$log_dir" #2,623,944
 
-task deco-psd-yolo10n "$log_dir" #2,751,400  2,804,536
-task deco-c2psd-yolo11n "$log_dir" #2,588,296  2,639,272
+# task deco-psd-yolo10n "$log_dir" #2,858,152
+# task deco-c2psd-yolo11n "$log_dir" #2,719,704
 
 # wait_for_completion deco-yolo11n
 # start_background_task deco-yolo11n "$log_dir"

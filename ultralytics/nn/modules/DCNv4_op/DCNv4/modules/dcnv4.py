@@ -84,7 +84,7 @@ class DCNv4(nn.Module):
         if not without_pointwise:
             self.value_proj = nn.Linear(channels, channels)
             self.output_proj = nn.Linear(channels, channels, bias=output_bias)
-        # self._reset_parameters()
+        self._reset_parameters()
 
         if center_feature_scale:
             self.center_feature_scale_proj_weight = nn.Parameter(
@@ -93,18 +93,18 @@ class DCNv4(nn.Module):
                 torch.tensor(0.0, dtype=torch.float).view((1,)).repeat(self.group, ))
             self.center_feature_scale_module = CenterFeatureScaleModule()
 
-    # def _reset_parameters(self):
-    #     constant_(self.offset_mask.weight.data, 0.)
-    #     constant_(self.offset_mask.bias.data, 0.)
-    #     if self.dw_kernel_size:
-    #         xavier_uniform_(self.offset_mask_dw.weight.data)
-    #         constant_(self.offset_mask_dw.bias.data, 0.)
-    #     if not self.without_pointwise:
-    #         xavier_uniform_(self.value_proj.weight.data)
-    #         constant_(self.value_proj.bias.data, 0.)
-    #         xavier_uniform_(self.output_proj.weight.data)
-    #         if self.output_proj.bias is not None:
-    #             constant_(self.output_proj.bias.data, 0.)
+    def _reset_parameters(self):
+        constant_(self.offset_mask.weight.data, 0.)
+        constant_(self.offset_mask.bias.data, 0.)
+        if self.dw_kernel_size:
+            xavier_uniform_(self.offset_mask_dw.weight.data)
+            constant_(self.offset_mask_dw.bias.data, 0.)
+        if not self.without_pointwise:
+            xavier_uniform_(self.value_proj.weight.data)
+            constant_(self.value_proj.bias.data, 0.)
+            xavier_uniform_(self.output_proj.weight.data)
+            if self.output_proj.bias is not None:
+                constant_(self.output_proj.bias.data, 0.)
 
     def forward(self, input):
         """
@@ -112,8 +112,9 @@ class DCNv4(nn.Module):
         :return output                     (N, H, W, C)
         """
         b, c, h, w = input.shape
+        input = input
 
-        x = input.permute(0, 2, 3, 1)
+        x = input.permute(0, 2, 3, 1).contiguous()
         if not self.without_pointwise:
             x = self.value_proj(x)
         # x = x.reshape(b, h, w, -1)
