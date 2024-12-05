@@ -55,16 +55,16 @@ class DCNv4(nn.Module):
         """
         super().__init__()
         self.channels = channels
-        self.group = channels//16 if group is None else group
+        self.group = channels//8 if group is None else group
         self.group_channels = self.channels // self.group
 
         if self.channels % self.group != 0:
             raise ValueError(
                 f'channels must be divisible by group, but got {self.channels} and {self.group}')
-        _d_per_group = self.channels // self.group
+        # _d_per_group = self.channels // self.group
 
         # you'd better set _d_per_group to a power of 2 which is more efficient in our CUDA implementation
-        assert _d_per_group % 16 == 0
+        # assert _d_per_group % 16 == 0
 
         self.offset_scale = offset_scale
         self.kernel_size = kernel_size
@@ -79,7 +79,7 @@ class DCNv4(nn.Module):
 
         self.K =  self.group * (kernel_size * kernel_size - self.remove_center)
         if dw_kernel_size is not None:
-            self.offset_mask_dw = nn.Conv2d(channels, channels, dw_kernel_size, stride=1, padding=(dw_kernel_size - 1) // 2, groups=1)
+            self.offset_mask_dw = nn.Conv2d(channels, channels, dw_kernel_size, stride=1, padding=(dw_kernel_size - 1) // 2, groups=channels)
         self.offset_mask = nn.Linear(channels, int(math.ceil((self.K * 3)/8)*8))
         if not without_pointwise:
             self.value_proj = nn.Linear(channels, channels)

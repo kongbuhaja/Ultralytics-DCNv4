@@ -339,8 +339,8 @@ class DConv(nn.Module):
         super().__init__()
         assert k==3
         c = int(c1 * e)//16*16
-        print(c)
-        self.cv1 = Conv(c1, c, 1, 1, act=False)
+        # self.cv1 = Conv(c1, c, 1, 1, act=False)
+        self.cv1 = nn.Conv2d(c1, c, 1, 1)
         self.conv = DCNv4(c, k, s, autopad(k, p, d), dw_kernel_size=dk, without_pointwise=False, output_bias=False)
         self.cv2 = Conv(c, c2, 1, 1)
 
