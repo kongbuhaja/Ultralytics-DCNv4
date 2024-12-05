@@ -1241,7 +1241,7 @@ class PSD(nn.Module):
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
 
-        self.attn = DConv(self.c, self.c, k=3, dk=3, e=0.7)
+        self.attn = DConv(self.c, self.c, k=3, dk=3, e=0.65)
         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
                                  Conv(self.c * 2, self.c, 1, act=False))
         
@@ -1254,7 +1254,7 @@ class PSD(nn.Module):
 class PSDBlock(nn.Module):
     def __init__(self, c, k=3, shortcut=True):
         super().__init__()
-        self.attn = DConv(c, c, k=k, dk=3, e=0.7)
+        self.attn = DConv(c, c, k=k, dk=3, e=0.65)
         self.ffn = nn.Sequential(Conv(c, c * 2, 1),
                                  Conv(c * 2, c, 1, act=False))
         self.add = shortcut
