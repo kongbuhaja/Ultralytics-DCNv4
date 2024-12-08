@@ -342,7 +342,7 @@ class DConv(nn.Module):
         dg = c//div
         # self.cv1 = Conv(c1, c, 1, 1, act=False)
         self.cv1 = nn.Conv2d(c1, c, 1, 1)
-        self.conv = DCNv4(c, k, s, autopad(k, p, d), group=dg, dw_kernel_size=dk, without_pointwise=False, output_bias=False)
+        self.conv = DCNv4(c, k, s, autopad(k, p, d), group=dg, dw_kernel_size=dk, without_pointwise=True, output_bias=False)
         self.cv2 = Conv(c, c2, 1, 1)
 
     def forward(self, x):
