@@ -55,7 +55,7 @@ class DCNv4(nn.Module):
         """
         super().__init__()
         self.channels = channels
-        self.group = channels//8 if group is None else group
+        self.group = channels//16 if group is None else group
         self.group_channels = self.channels // self.group
 
         if self.channels % self.group != 0:

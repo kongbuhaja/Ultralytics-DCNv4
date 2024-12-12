@@ -335,7 +335,7 @@ class Concat(nn.Module):
         return torch.cat(x, self.d)
 
 class DConv(nn.Module):
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, div=8, dk=None, act=True, e=1.0):
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, div=16, dk=None, act=True, e=1.0):
         super().__init__()
         assert k==3
         c = int(c1 * e)//div*div
