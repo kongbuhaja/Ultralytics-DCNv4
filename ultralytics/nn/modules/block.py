@@ -1132,8 +1132,8 @@ class DBottleneck2(nn.Module):
         super().__init__()
         c_ = int(c2 * e)//gc*gc  # hidden channels
         self.pw1 = Conv(c1, c_, 1, 1)
-        self.cv1 = DConv(c1, c_, k[0], gc=gc)
-        self.cv2 = DConv(c_, c2, k[1], gc=gc)
+        self.cv1 = DCN(c_, k[0], gc=gc)
+        self.cv2 = DCN(c_, k[1], gc=gc)
         self.pw2 = Conv(c_, c2, 1, 1)
         self.add = shortcut and c1 == c2
 
@@ -1162,7 +1162,9 @@ class DC2f(nn.Module):
         self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
          # 8:1.2, 16:1.4
          # dbottleneck2 16: 1.4
-        self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.4) for _ in range(n))
+        # self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.4) for _ in range(n))
+        self.m = nn.ModuleList(DBottleneck2(self.c, self.c, shortcut, g, k=(3, 3), e=1.5) for _ in range(n))
+
 
     def forward(self, x):
         """Forward pass through C2f layer."""
@@ -1208,11 +1210,30 @@ class DC3k(C3):
         #  8:1.3, 16:1.5
         self.m = nn.Sequential(*(DBottleneck2(c_, c_, shortcut, g, k=(k, k), e=1.5) for _ in range(n)))
 
+# class PSD(nn.Module):
+#     def __init__(self, c1, c2, e=0.5):
+#         super().__init__()
+#         assert c1 == c2
+#         self.c = int(c1 * e)
+#         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+#         self.cv2 = Conv(2 * self.c, c1, 1)
+
+#         # self.attn = DConv(self.c, self.c, k=3, e=0.8) # 8:0.9, 16:1.0
+#         self.attn = DCN(self.c)
+#         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
+#                                  Conv(self.c * 2, self.c, 1, act=False))
+        
+#     def forward(self, x):
+#         a, b = self.cv1(x).split((self.c, self.c), dim=1)
+#         b = b + self.attn(b)
+#         b = b + self.ffn(b)
+#         return self.cv2(torch.cat((a, b), 1))
+    
 class PSD(nn.Module):
-    def __init__(self, c1, c2, e=0.5):
+    def __init__(self, c1, c2, e=0.5, gc=16):
         super().__init__()
         assert c1 == c2
-        self.c = int(c1 * e)
+        self.c = int(c1 * e)//gc*gc
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
 
@@ -1241,11 +1262,26 @@ class PSDBlock(nn.Module):
         x = x + self.ffn(x) if self.add else self.ffn(x)
         return x
     
+# class C2PSD(nn.Module):
+#     def __init__(self, c1, c2, n=1, e=0.5):
+#         super().__init__()
+#         assert c1 == c2
+#         self.c = int(c1*e)
+#         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+#         self.cv2 = Conv(2 * self.c, c1, 1)
+
+#         self.m = nn.Sequential(*(PSDBlock(self.c, k=3) for _ in range(n)))
+
+#     def forward(self, x):
+#         a, b = self.cv1(x).split((self.c, self.c), dim=1)
+#         b = self.m(b)
+#         return self.cv2(torch.cat((a, b), 1))
+    
 class C2PSD(nn.Module):
-    def __init__(self, c1, c2, n=1, e=0.5):
+    def __init__(self, c1, c2, n=1, e=0.5, gc=16):
         super().__init__()
         assert c1 == c2
-        self.c = int(c1*e)
+        self.c = int(c1*e)//gc*gc
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
 
