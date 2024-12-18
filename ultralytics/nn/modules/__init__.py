@@ -57,11 +57,9 @@ from .block import (
     ResNetLayer,
     SCDown,
     DC2f,
-    DC2fCIB,
-    DC3k,
     DC3k2,
     PSD,
-    C2PSD
+    C2PSD,
 )
 from .conv import (
     CBAM,
@@ -78,6 +76,7 @@ from .conv import (
     RepConv,
     SpatialAttention,
     DConv,
+    DCN,
 )
 from .head import OBB, Classify, Detect, Pose, RTDETRDecoder, Segment, WorldDetect, v10Detect
 from .transformer import (
@@ -165,7 +164,8 @@ __all__ = (
     "PSA",
     "DConv",
     "DC2f",
-    "DC2fCIB",
     "PSD",
-    "C2PSD"
+    "C2PSD",
+    "DC3k2",
+    "DCN"
 )

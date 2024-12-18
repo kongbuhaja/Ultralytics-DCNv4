@@ -62,7 +62,6 @@ from ultralytics.nn.modules import (
     v10Detect,
     DConv,
     DC2f,
-    DC2fCIB,
     DC3k2,
     PSD,
     C2PSD
@@ -1005,7 +1004,6 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             C2fCIB,
             DConv,
             DC2f,
-            DC2fCIB,
             DC3k2,
             PSD,
             C2PSD
@@ -1036,7 +1034,6 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 C2fCIB,
                 C2PSA,
                 DC2f,
-                DC2fCIB,
                 DC3k2,
                 C2PSD
             }:
