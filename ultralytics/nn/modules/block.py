@@ -8,7 +8,7 @@ import math
 
 from ultralytics.utils.torch_utils import fuse_conv_and_bn
 
-from .conv import DConv, Conv, DWConv, GhostConv, LightConv, RepConv, autopad
+from .conv import DConv, Conv, DWConv, GhostConv, LightConv, RepConv, autopad, DCN
 from .transformer import TransformerBlock
 
 __all__ = (
@@ -1124,6 +1124,24 @@ class DBottleneck(nn.Module):
         """Applies the YOLO FPN to input data."""
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
     
+class DBottleneck2(nn.Module):
+    """Standard bottleneck."""
+
+    def __init__(self, c1, c2, shortcut=True, g=1, k=(3, 3), e=0.5, gc=16):
+        """Initializes a standard bottleneck module with optional shortcut connection and configurable parameters."""
+        super().__init__()
+        c_ = int(c2 * e)//gc*gc  # hidden channels
+        self.pw1 = Conv(c1, c_, 1, 1)
+        self.cv1 = DConv(c1, c_, k[0], gc=gc)
+        self.cv2 = DConv(c_, c2, k[1], gc=gc)
+        self.pw2 = Conv(c_, c2, 1, 1)
+        self.add = shortcut and c1 == c2
+
+    def forward(self, x):
+        """Applies the YOLO FPN to input data."""
+        x_ = self.pw2(self.cv2(self.cv1(self.pw1(x))))
+        return x + x_ if self.add else x_
+    
 class RepDBottleneck(DBottleneck):
     """Rep bottleneck."""
 
@@ -1142,8 +1160,9 @@ class DC2f(nn.Module):
         self.c = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
-         # 8:1.2, 16:1.5
-        self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.2) for _ in range(n))
+         # 8:1.2, 16:1.4
+         # dbottleneck2 16: 1.4
+        self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.4) for _ in range(n))
 
     def forward(self, x):
         """Forward pass through C2f layer."""
@@ -1157,63 +1176,6 @@ class DC2f(nn.Module):
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
     
-class DCIB(nn.Module):
-    """
-    Conditional Identity Block (DCIB) module.
-
-    Args:
-        c1 (int): Number of input channels.
-        c2 (int): Number of output channels.
-        shortcut (bool, optional): Whether to add a shortcut connection. Defaults to True.
-        e (float, optional): Scaling factor for the hidden channels. Defaults to 0.5.
-        lk (bool, optional): Whether to use RepVGGDW for the third convolutional layer. Defaults to False.
-    """
-
-    def __init__(self, c1, c2, shortcut=True, e=0.5, lk=False):
-        """Initializes the custom model with optional shortcut, scaling factor, and RepVGGDW layer."""
-        super().__init__()
-        c_ = int(c2 * e)  # hidden channels
-        self.cv1 = nn.Sequential(
-            DConv(c1, c1, k=3, e=1.2),
-            Conv(c1, 2 * c_, 1),
-            RepVGGDW(2 * c_) if lk else DConv(2 * c_, 2 * c_, 3, e=1.2),
-            Conv(2 * c_, c2, 1),
-            DConv(c2, c2, k=3, e=1.2)
-        )
-
-        self.add = shortcut and c1 == c2
-
-    def forward(self, x):
-        """
-        Forward pass of the CIB module.
-
-        Args:
-            x (torch.Tensor): Input tensor.
-
-        Returns:
-            (torch.Tensor): Output tensor.
-        """
-        return x + self.cv1(x) if self.add else self.cv1(x)
-    
-class DC2fCIB(C2f):
-    """
-    DC2fCIB class represents a convolutional block with DC2f and DCIB modules.
-
-    Args:
-        c1 (int): Number of input channels.
-        c2 (int): Number of output channels.
-        n (int, optional): Number of CIB modules to stack. Defaults to 1.
-        shortcut (bool, optional): Whether to use shortcut connection. Defaults to False.
-        lk (bool, optional): Whether to use local key connection. Defaults to False.
-        g (int, optional): Number of groups for grouped convolution. Defaults to 1.
-        e (float, optional): Expansion ratio for CIB modules. Defaults to 0.5.
-    """
-
-    def __init__(self, c1, c2, n=1, shortcut=False, lk=False, g=1, e=0.5):
-        """Initializes the module with specified parameters for channel, shortcut, local key, groups, and expansion."""
-        super().__init__(c1, c2, n, shortcut, g, e)
-        self.m = nn.ModuleList(DCIB(self.c, self.c, shortcut, e=1.0, lk=lk) for _ in range(n))
-    
 class DC3k2(C2f):
     """Faster Implementation of DCSP Bottleneck with 2 convolutions."""
 
@@ -1224,6 +1186,17 @@ class DC3k2(C2f):
             DC3k(self.c, self.c, 2, shortcut, g) if dc3k else DBottleneck(self.c, self.c, shortcut, g, de=1.15) for _ in range(n)
         )
 
+# class DC3k(C3):
+#     """DC3k is a DCSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
+
+#     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5, k=3):
+#         """Initializes the C3k module with specified channels, number of layers, and configurations."""
+#         super().__init__(c1, c2, n, shortcut, g, e)
+#         c_ = int(c2 * e)  # hidden channels
+#         # self.m = nn.Sequential(*(RepDBottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0) for _ in range(n)))
+#         #  8:1.3, 16:1.5
+#         self.m = nn.Sequential(*(DBottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0, de=1.5) for _ in range(n)))
+
 class DC3k(C3):
     """DC3k is a DCSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
 
@@ -1233,7 +1206,7 @@ class DC3k(C3):
         c_ = int(c2 * e)  # hidden channels
         # self.m = nn.Sequential(*(RepDBottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0) for _ in range(n)))
         #  8:1.3, 16:1.5
-        self.m = nn.Sequential(*(DBottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0, de=1.3) for _ in range(n)))
+        self.m = nn.Sequential(*(DBottleneck2(c_, c_, shortcut, g, k=(k, k), e=1.5) for _ in range(n)))
 
 class PSD(nn.Module):
     def __init__(self, c1, c2, e=0.5):
@@ -1243,7 +1216,8 @@ class PSD(nn.Module):
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
 
-        self.attn = DConv(self.c, self.c, k=3, e=0.9) # 8:0.9, 16:1.0
+        # self.attn = DConv(self.c, self.c, k=3, e=0.8) # 8:0.9, 16:1.0
+        self.attn = DCN(self.c)
         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
                                  Conv(self.c * 2, self.c, 1, act=False))
         
@@ -1256,7 +1230,8 @@ class PSD(nn.Module):
 class PSDBlock(nn.Module):
     def __init__(self, c, k=3, shortcut=True):
         super().__init__()
-        self.attn = DConv(c, c, k=k, e=0.9) # 8:0.9, 16:1.0
+        # self.attn = DConv(c, c, k=k, e=0.8) # 8:0.9, 16:1.0
+        self.attn = DCN(c)
         self.ffn = nn.Sequential(Conv(c, c * 2, 1),
                                  Conv(c * 2, c, 1, act=False))
         self.add = shortcut

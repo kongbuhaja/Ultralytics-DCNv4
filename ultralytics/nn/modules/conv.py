@@ -335,15 +335,29 @@ class Concat(nn.Module):
         return torch.cat(x, self.d)
 
 class DConv(nn.Module):
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, div=8, dk=None, act=True, e=1.0):
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, gc=16, dk=3, act=True, e=1.0):
         super().__init__()
         assert k==3
-        c = int(c1 * e)//div*div
-        dg = c//div
+        c = int(c1 * e)//gc*gc
         # self.cv1 = Conv(c1, c, 1, 1, act=False)
         self.cv1 = nn.Conv2d(c1, c, 1, 1)
-        self.conv = DCNv4(c, k, s, autopad(k, p, d), group=dg, dw_kernel_size=dk, without_pointwise=False, output_bias=False)
+        self.conv = DCN(c, k, s, autopad(k, p, d), d, gc, dk)
+        # self.conv = DCNv4(c, k, s, autopad(k, p, d), group=dg, dw_kernel_size=dk, without_pointwise=False, output_bias=False)
         self.cv2 = Conv(c, c2, 1, 1)
 
     def forward(self, x):
         return self.cv2(self.conv(self.cv1(x)))
+    
+class DCN(nn.Module):
+    default_act = nn.SiLU()
+
+    def __init__(self, c, k=3, s=1, p=None, d=1, gc=16, dk=3, act=True):
+        super().__init__()
+        assert k==3
+        self.conv = DCNv4(c, k, s, autopad(k, p, d), group=c//gc, dw_kernel_size=dk, without_pointwise=False, output_bias=False)
+        self.bn = nn.BatchNorm2d(c)
+        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        return self.act(self.bn(self.conv(x)))
