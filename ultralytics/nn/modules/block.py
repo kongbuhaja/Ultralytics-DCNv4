@@ -1154,7 +1154,7 @@ class RepDBottleneck(DBottleneck):
 class DC2f(nn.Module):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
 
-    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
+    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5, gc=8):
         """Initializes a CSP bottleneck with 2 convolutions and n Bottleneck blocks for faster processing."""
         super().__init__()
         self.c = int(c2 * e)  # hidden channels
@@ -1163,7 +1163,7 @@ class DC2f(nn.Module):
          # 8:1.2, 16:1.4
          # dbottleneck2 16: 1.4
         # self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.4) for _ in range(n))
-        self.m = nn.ModuleList(DBottleneck2(self.c, self.c, shortcut, g, k=(3, 3), e=1.5) for _ in range(n))
+        self.m = nn.ModuleList(DBottleneck2(self.c, self.c, shortcut, g, k=(3, 3), e=1.5, gc=gc) for _ in range(n))
 
 
     def forward(self, x):
