@@ -1181,11 +1181,11 @@ class DC2f(nn.Module):
 class DC3k2(C2f):
     """Faster Implementation of DCSP Bottleneck with 2 convolutions."""
 
-    def __init__(self, c1, c2, n=1, dc3k=False, e=0.5, g=1, shortcut=True):
+    def __init__(self, c1, c2, n=1, dc3k=False, e=0.5, g=1, gc=8, shortcut=True):
         """Initializes the C3k2 module, a faster CSP Bottleneck with 2 convolutions and optional C3k blocks."""
         super().__init__(c1, c2, n, shortcut, g, e)
         self.m = nn.ModuleList(
-            DC3k(self.c, self.c, 2, shortcut, g) if dc3k else DBottleneck(self.c, self.c, shortcut, g, de=1.15) for _ in range(n)
+            DC3k(self.c, self.c, 2, shortcut, g, gc=gc) if dc3k else DBottleneck(self.c, self.c, shortcut, g, de=1.15) for _ in range(n)
         )
 
 # class DC3k(C3):
@@ -1202,13 +1202,13 @@ class DC3k2(C2f):
 class DC3k(C3):
     """DC3k is a DCSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
 
-    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5, k=3):
+    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5, k=3, gc=16):
         """Initializes the C3k module with specified channels, number of layers, and configurations."""
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)  # hidden channels
         # self.m = nn.Sequential(*(RepDBottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0) for _ in range(n)))
         #  8:1.3, 16:1.5
-        self.m = nn.Sequential(*(DBottleneck2(c_, c_, shortcut, g, k=(k, k), e=1.5) for _ in range(n)))
+        self.m = nn.Sequential(*(DBottleneck2(c_, c_, shortcut, g, k=(k, k), e=1.4, gc=gc) for _ in range(n)))
 
 # class PSD(nn.Module):
 #     def __init__(self, c1, c2, e=0.5):
@@ -1230,7 +1230,7 @@ class DC3k(C3):
 #         return self.cv2(torch.cat((a, b), 1))
     
 class PSD(nn.Module):
-    def __init__(self, c1, c2, e=0.5, gc=16):
+    def __init__(self, c1, c2, e=0.5, gc=8):
         super().__init__()
         assert c1 == c2
         self.c = int(c1 * e)//gc*gc
@@ -1238,7 +1238,7 @@ class PSD(nn.Module):
         self.cv2 = Conv(2 * self.c, c1, 1)
 
         # self.attn = DConv(self.c, self.c, k=3, e=0.8) # 8:0.9, 16:1.0
-        self.attn = DCN(self.c)
+        self.attn = DCN(self.c, gc=gc)
         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
                                  Conv(self.c * 2, self.c, 1, act=False))
         
@@ -1249,10 +1249,10 @@ class PSD(nn.Module):
         return self.cv2(torch.cat((a, b), 1))
 
 class PSDBlock(nn.Module):
-    def __init__(self, c, k=3, shortcut=True):
+    def __init__(self, c, k=3, gc=16, shortcut=True):
         super().__init__()
         # self.attn = DConv(c, c, k=k, e=0.8) # 8:0.9, 16:1.0
-        self.attn = DCN(c)
+        self.attn = DCN(c, gc=gc)
         self.ffn = nn.Sequential(Conv(c, c * 2, 1),
                                  Conv(c * 2, c, 1, act=False))
         self.add = shortcut
@@ -1278,14 +1278,14 @@ class PSDBlock(nn.Module):
 #         return self.cv2(torch.cat((a, b), 1))
     
 class C2PSD(nn.Module):
-    def __init__(self, c1, c2, n=1, e=0.5, gc=16):
+    def __init__(self, c1, c2, n=1, e=0.5, gc=8):
         super().__init__()
         assert c1 == c2
         self.c = int(c1*e)//gc*gc
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
 
-        self.m = nn.Sequential(*(PSDBlock(self.c, k=3) for _ in range(n)))
+        self.m = nn.Sequential(*(PSDBlock(self.c, k=3, gc=gc) for _ in range(n)))
 
     def forward(self, x):
         a, b = self.cv1(x).split((self.c, self.c), dim=1)
