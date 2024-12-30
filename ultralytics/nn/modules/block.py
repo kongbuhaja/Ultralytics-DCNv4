@@ -1244,7 +1244,7 @@ class PSD(nn.Module):
         self.cv2 = Conv(2 * self.c, c1, 1)
 
         # self.attn = DConv(self.c, self.c, k=3, e=0.8, gc=gc) # 8:0.9, 16:1.0
-        self.attn = DCN(self.c)
+        self.attn = DCN(self.c, gc=gc)
         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
                                  Conv(self.c * 2, self.c, 1, act=False))
         
