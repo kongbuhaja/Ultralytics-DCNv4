@@ -96,9 +96,6 @@ class DCNv4(nn.Module):
     def _reset_parameters(self):
         constant_(self.offset_mask.weight.data, 0.)
         constant_(self.offset_mask.bias.data, 0.)
-        if self.dw_kernel_size:
-            xavier_uniform_(self.offset_mask_dw.weight.data)
-            constant_(self.offset_mask_dw.bias.data, 0.)
         if not self.without_pointwise:
             xavier_uniform_(self.value_proj.weight.data)
             constant_(self.value_proj.bias.data, 0.)
