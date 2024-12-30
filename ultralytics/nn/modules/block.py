@@ -1162,7 +1162,7 @@ class DC2f(nn.Module):
         self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
          # 8:1.2, 16:1.4
          # dbottleneck2 16: 1.4
-        self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.2, gc=gc) for _ in range(n))
+        self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.1, gc=gc) for _ in range(n))
         # self.m = nn.ModuleList(DBottleneck2(self.c, self.c, shortcut, g, k=(3, 3), e=1.5, gc=gc) for _ in range(n))
 
 
