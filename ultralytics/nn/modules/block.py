@@ -1162,7 +1162,7 @@ class DC2f(nn.Module):
         self.cv2 = Conv((2 + n) * self.c, c2, 1)  # optional act=FReLU(c2)
          # 8:1.2, 16:1.4
          # dbottleneck2 16: 1.4
-        self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.1, gc=gc) for _ in range(n))
+        self.m = nn.ModuleList(DBottleneck(self.c, self.c, shortcut, g, k=(3, 3), e=1.0, de=1.2, gc=gc) for _ in range(n))
         # self.m = nn.ModuleList(DBottleneck2(self.c, self.c, shortcut, g, k=(3, 3), e=1.5, gc=gc) for _ in range(n))
 
 
@@ -1274,7 +1274,7 @@ class PSD(nn.Module):
 #         return self.cv2(torch.cat((a, b), 1))
 
 class PSDBlock(nn.Module):
-    def __init__(self, c, k=3, gc=16, shortcut=True):
+    def __init__(self, c, k=3, gc=8, shortcut=True):
         super().__init__()
         # self.attn = DConv(c, c, k=k, e=0.8) # 8:0.9, 16:1.0
         self.attn = DCN(c, gc=gc)
