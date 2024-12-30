@@ -355,9 +355,7 @@ class DCN(nn.Module):
         super().__init__()
         assert k==3
         self.conv = DCNv4(c, k, s, autopad(k, p, d), group=c//gc, dw_kernel_size=dk, without_pointwise=False, output_bias=False)
-        self.bn = nn.BatchNorm2d(c)
-        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
-        return self.act(self.bn(self.conv(x)))
+        return self.conv(x)
