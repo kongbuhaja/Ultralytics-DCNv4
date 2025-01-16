@@ -1,4 +1,5 @@
 # DeCo_YOLO: YOLOs with Deformable Convolution
+This code is based on Utralytics(AGPL-3.0) and DCNv4(MIT)
 
 ![graph](/images/graph.png)
 
@@ -14,8 +15,8 @@ In the robot industry, many researchers try to maximize the performance of objec
 | DeCo-YOLO8n (O) | 2.94 M | **38.6** | 0.8532 ms | 0.0658 ms | 0.5196 ms | 0.2678 ms | 1172 |
 | YOLO10n (X) | 2.76 M | 38.5 | 0.7283 ms | 0.0674 ms | 0.6296 ms | 0.0313 ms | 1373 |
 | DeCo-YOLO10n (X) | 2.98 M | **39.4** | 0.7638 ms | 0.0661 ms | 0.6642 ms | 0.0334 ms | 1309 |
-| YOLO11n (O) | 2.62 M | **39.5** | 0.8970 ms | 0.0693 ms | 0.5641 ms | 0.2637 ms | 1115 |
-| DeCo-YOLO11n (O) | 2.78 M | 39.1 | 0.9308 ms | 0.0671 ms | 0.6030 ms | 0.2607 ms | 1074 |
+<!-- | YOLO11n (O) | 2.62 M | **39.5** | 0.8970 ms | 0.0693 ms | 0.5641 ms | 0.2637 ms | 1115 |
+| DeCo-YOLO11n (O) | 2.78 M | 39.1 | 0.9308 ms | 0.0671 ms | 0.6030 ms | 0.2607 ms | 1074 | -->
 
 ## Installation
 ```conda``` virtual environment is recommended.
