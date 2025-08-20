@@ -1,7 +1,7 @@
 # DeCo_YOLO: YOLOs with Deformable Convolution
 This code is based on Utralytics(AGPL-3.0) and DCNv4(MIT)
 
-![graph](/images/graph.png)
+![graph](/images/graph.jpg)
 
 <details>
 <summary>Abstract</summary>
